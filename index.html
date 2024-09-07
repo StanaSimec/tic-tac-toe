@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Piskvorky</title>
+    <meta name="description" content="Piskvorky" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <style>
+      * {
+        margin: 0;
+      }
+
+      :root {
+        --layout-height: 100vh;
+        --layout-width: 100vw;
+        --board-size: 100vmin;
+        --cell-size: 33.3vmin;
+        --selected-color: #dcdcdc;
+        --border: 1px solid #d3d3d3;
+      }
+
+      html,
+      body {
+        height: var(--layout-height);
+        width: var(--layout-width);
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      p {
+        font-family: "Courier New";
+      }
+
+      .board {
+        display: flex;
+        flex-direction: column;
+        width: var(--board-size);
+        height: var(--board-size);
+      }
+
+      .board .row:not(:first-child) {
+        border-top: var(--border);
+      }
+
+      .row {
+        display: flex;
+        width: inherit;
+        height: var(--cell-size);
+      }
+
+      .row p:not(:first-child) {
+        border-left: var(--border);
+      }
+
+      .row p {
+        width: var(--cell-size);
+        height: inherit;
+        line-height: var(--cell-size);
+        text-align: center;
+        font-size: var(--cell-size);
+      }
+
+      .cross:after {
+        content: "X";
+      }
+
+      .circle:after {
+        content: "O";
+      }
+
+      .modal {
+        z-index: 1;
+        width: var(--board-size);
+        height: calc(var(--cell-size) * 1.7);
+        position: absolute;
+        background-color: var(--selected-color);
+        display: none;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        opacity: 0.9;
+      }
+
+      .modal p {
+        line-height: calc(var(--cell-size) * 0.5);
+        text-align: center;
+        font-size: calc(var(--cell-size) * 0.5);
+      }
+    </style>
+    <div class="board">
+      <div class="row" data-row="1">
+        <p data-cell="1"></p>
+        <p data-cell="2"></p>
+        <p data-cell="3"></p>
+      </div>
+      <div class="row" data-row="2">
+        <p data-cell="4"></p>
+        <p data-cell="5"></p>
+        <p data-cell="6"></p>
+      </div>
+      <div class="row" data-row="3">
+        <p data-cell="7"></p>
+        <p data-cell="8"></p>
+        <p data-cell="9"></p>
+      </div>
+    </div>
+    <div class="modal">
+      <p>This is modal</p>
+    </div>
+    <script>
+      let lastMark = "circle";
+
+      function handleCellClick(e) {
+        let mark = lastMark === "circle" ? "cross" : "circle";
+        this.className = `full ${mark}`;
+        this.removeEventListener("click", handleCellClick);
+        lastMark = mark;
+        isFinished();
+      }
+
+      function displayWinner(winningMark) {
+        document.querySelector(".modal").style.display = "flex";
+        document.querySelector(
+          ".modal p"
+        ).innerText = `${winningMark.toUpperCase()} WON!`;
+      }
+
+      function isWon(cells) {
+        const combinations = [
+          [1, 2, 3],
+          [4, 5, 6],
+          [7, 8, 9],
+          [1, 4, 7],
+          [2, 5, 8],
+          [3, 6, 9],
+          [1, 5, 9],
+          [3, 5, 7],
+        ];
+
+        for (let combination of combinations) {
+          const isCompleted = combination.every((num) => cells.includes(num));
+          if (isCompleted) return true;
+        }
+        return false;
+      }
+
+      function isFinished() {
+        const crosses = [...document.querySelectorAll(".cross")].map((cell) =>
+          Number(cell.dataset.cell)
+        );
+
+        if (isWon(crosses)) {
+          displayWinner("crosses");
+          return;
+        }
+
+        const circles = [...document.querySelectorAll(".circle")].map((cell) =>
+          Number(cell.dataset.cell)
+        );
+
+        if (isWon(circles)) {
+          displayWinner("circles");
+          return;
+        }
+      }
+
+      const cells = document.querySelectorAll("p");
+      cells.forEach((cell) => cell.addEventListener("click", handleCellClick));
+    </script>
+  </body>
+</html>
