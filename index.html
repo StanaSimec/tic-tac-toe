@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" />
-    <title>Piskvorky</title>
+    <meta Content-Type="text/html" charset="utf-8" />
+    <title>Tic tac toe</title>
     <meta name="description" content="Piskvorky" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
@@ -13,18 +13,15 @@
       }
 
       :root {
-        --layout-height: 100vh;
-        --layout-width: 100vw;
         --board-size: 100vmin;
         --cell-size: 33.3vmin;
-        --selected-color: #dcdcdc;
         --border: 1px solid #d3d3d3;
       }
 
       html,
       body {
-        height: var(--layout-height);
-        width: var(--layout-width);
+        height: 100vh;
+        width: 100vw;
       }
 
       body {
@@ -79,18 +76,23 @@
         width: var(--board-size);
         height: calc(var(--cell-size) * 1.7);
         position: absolute;
-        background-color: var(--selected-color);
+        background-color: #dcdcdc;
         display: none;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         opacity: 0.9;
       }
 
       .modal p {
-        line-height: calc(var(--cell-size) * 0.5);
+        --height: calc(var(--cell-size) * 0.5);
+        line-height: var(--height);
         text-align: center;
-        font-size: calc(var(--cell-size) * 0.5);
+        font-size: var(--height);
+      }
+
+      .modal .refresh:before {
+        content: "\21BA";
       }
     </style>
     <div class="board">
@@ -111,7 +113,8 @@
       </div>
     </div>
     <div class="modal">
-      <p>This is modal</p>
+      <p>text</p>
+      <p class="refresh"></p>
     </div>
     <script>
       let lastMark = "circle";
@@ -125,10 +128,25 @@
       }
 
       function displayWinner(winningMark) {
+        const text = `VÝHRA <span style="font-weight: bold">${winningMark.toUpperCase()}</span>`;
+        displayModal(text);
+      }
+
+      function displayDraw() {
+        const text = "REMÍZA";
+        displayModal(text);
+      }
+
+      function displayModal(text) {
         document.querySelector(".modal").style.display = "flex";
-        document.querySelector(
-          ".modal p"
-        ).innerText = `${winningMark.toUpperCase()} WON!`;
+        document.querySelector(".modal p").innerHTML = text;
+        document
+          .querySelector(".refresh")
+          .addEventListener("click", () => location.reload());
+      }
+
+      function isDraw(crosses, circles) {
+        return crosses.length + crosses.length >= 9;
       }
 
       function isWon(cells) {
@@ -156,7 +174,7 @@
         );
 
         if (isWon(crosses)) {
-          displayWinner("crosses");
+          displayWinner("X");
           return;
         }
 
@@ -165,12 +183,17 @@
         );
 
         if (isWon(circles)) {
-          displayWinner("circles");
+          displayWinner("O");
+          return;
+        }
+
+        if (isDraw(crosses, circles)) {
+          displayDraw();
           return;
         }
       }
 
-      const cells = document.querySelectorAll("p");
+      const cells = document.querySelectorAll(".board .row p");
       cells.forEach((cell) => cell.addEventListener("click", handleCellClick));
     </script>
   </body>
