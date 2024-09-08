@@ -16,6 +16,7 @@
         --board-size: 100vmin;
         --cell-size: 33.3vmin;
         --border: 1px solid #d3d3d3;
+        --next-mark: "X";
       }
 
       html,
@@ -63,6 +64,11 @@
         font-size: var(--cell-size);
       }
 
+      .row p:not(.cross):not(.circle):hover:after {
+        color: gray;
+        content: var(--next-mark);
+      }
+
       .cross:after {
         content: "X";
       }
@@ -73,11 +79,22 @@
 
       .modal {
         z-index: 1;
-        width: var(--board-size);
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        opacity: 1;
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .inner-modal {
+        z-index: 1;
+        width: 100vw;
         height: calc(var(--cell-size) * 1.7);
         position: absolute;
+        display: flex;
         background-color: #dcdcdc;
-        display: none;
         flex-direction: column;
         justify-content: center;
         align-items: center;
@@ -117,17 +134,24 @@
       </div>
     </div>
     <div class="modal">
-      <p>text</p>
-      <p class="refresh"></p>
+      <div class="inner-modal">
+        <p>text</p>
+        <p class="refresh"></p>
+      </div>
     </div>
     <script>
-      let lastMark = "circle";
-
       function handleCellClick(e) {
-        let mark = lastMark === "circle" ? "cross" : "circle";
-        this.className = `full ${mark}`;
+        const mark = getComputedStyle(document.documentElement)
+          .getPropertyValue("--next-mark")
+          .replace(/["]/g, "");
+        const className = mark === "O" ? "circle" : "cross";
+        this.className = `full ${className}`;
+        const nextMark = mark == "O" ? "X" : "O";
+        document.documentElement.style.setProperty(
+          "--next-mark",
+          `"${nextMark}"`
+        );
         this.removeEventListener("click", handleCellClick);
-        lastMark = mark;
         isFinished();
       }
 
