@@ -13,33 +13,40 @@
       }
 
       :root {
-        --board-size: 100vmin;
         --cell-size: 33.3vmin;
         --border: 1px solid #d3d3d3;
         --next-mark: "X";
       }
 
-      html,
-      body {
-        height: 100vh;
-        width: 100vw;
+      html {
+        font-size: 16px;
+        font-family: "Courier New";
       }
 
+      html,
       body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        height: 100%;
+        width: 100%;
       }
 
       p {
-        font-family: "Courier New";
+        font-size: 5rem;
+        line-height: 7.5rem;
+      }
+
+      .board-container {
+        width: 100%;
+        height: calc(100% - 5rem);
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
 
       .board {
         display: flex;
         flex-direction: column;
-        width: var(--board-size);
-        height: var(--board-size);
+        width: 20rem;
+        height: 20rem;
       }
 
       .board .row:not(:first-child) {
@@ -49,7 +56,7 @@
       .row {
         display: flex;
         width: inherit;
-        height: var(--cell-size);
+        height: 33.3%;
       }
 
       .row p:not(:first-child) {
@@ -57,11 +64,14 @@
       }
 
       .row p {
-        width: var(--cell-size);
-        height: inherit;
-        line-height: var(--cell-size);
+        width: 33.3%;
+        height: 100%;
+        line-height: 5rem;
         text-align: center;
-        font-size: var(--cell-size);
+        font-size: 5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
 
       .row p:not(.cross):not(.circle):hover:after {
@@ -86,12 +96,13 @@
         display: none;
         justify-content: center;
         align-items: center;
+        top: 0;
       }
 
       .inner-modal {
         z-index: 1;
-        width: 100vw;
-        height: calc(var(--cell-size) * 1.7);
+        width: 100%;
+        height: 30%;
         position: absolute;
         display: flex;
         background-color: #dcdcdc;
@@ -102,10 +113,9 @@
       }
 
       .modal p {
-        --height: calc(var(--cell-size) * 0.5);
-        line-height: var(--height);
+        line-height: 5rem;
         text-align: center;
-        font-size: var(--height);
+        font-size: 5rem;
       }
 
       .modal .refresh:before {
@@ -115,22 +125,35 @@
       .modal .refresh:hover {
         color: grey;
       }
+      .header {
+        height: 5rem;
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        align-self: center;
+      }
     </style>
-    <div class="board">
-      <div class="row" data-row="1">
-        <p data-cell="1"></p>
-        <p data-cell="2"></p>
-        <p data-cell="3"></p>
-      </div>
-      <div class="row" data-row="2">
-        <p data-cell="4"></p>
-        <p data-cell="5"></p>
-        <p data-cell="6"></p>
-      </div>
-      <div class="row" data-row="3">
-        <p data-cell="7"></p>
-        <p data-cell="8"></p>
-        <p data-cell="9"></p>
+    <div class="header">
+      <p>X: <span id="cross-points">0</span></p>
+      <p>O: <span id="circle-points">0</span></p>
+    </div>
+    <div class="board-container">
+      <div class="board">
+        <div class="row" data-row="1">
+          <p data-cell="1"></p>
+          <p data-cell="2"></p>
+          <p data-cell="3"></p>
+        </div>
+        <div class="row" data-row="2">
+          <p data-cell="4"></p>
+          <p data-cell="5"></p>
+          <p data-cell="6"></p>
+        </div>
+        <div class="row" data-row="3">
+          <p data-cell="7"></p>
+          <p data-cell="8"></p>
+          <p data-cell="9"></p>
+        </div>
       </div>
     </div>
     <div class="modal">
@@ -144,8 +167,7 @@
         const mark = getComputedStyle(document.documentElement)
           .getPropertyValue("--next-mark")
           .replace(/["]/g, "");
-        const className = mark === "O" ? "circle" : "cross";
-        this.className = `full ${className}`;
+        this.className = mark === "O" ? "circle" : "cross";
         const nextMark = mark == "O" ? "X" : "O";
         document.documentElement.style.setProperty(
           "--next-mark",
@@ -170,7 +192,13 @@
         document.querySelector(".modal p").innerHTML = text;
         document
           .querySelector(".refresh")
-          .addEventListener("click", () => location.reload());
+          .addEventListener("click", resetGame);
+      }
+
+      function resetGame() {
+        localStorage.setItem("crossPoints", 0);
+        localStorage.setItem("circlePoints", 0);
+        location.reload();
       }
 
       function isDraw(crosses, circles) {
@@ -202,7 +230,7 @@
         );
 
         if (isWon(crosses)) {
-          displayWinner("X");
+          addPointTo("X");
           return;
         }
 
@@ -211,7 +239,7 @@
         );
 
         if (isWon(circles)) {
-          displayWinner("O");
+          addPointTo("O");
           return;
         }
 
@@ -221,8 +249,31 @@
         }
       }
 
+      function initResults() {
+        const circlePoints = Number(localStorage.getItem("circlePoints") || 0);
+        const circlePointsElement = document.querySelector("#circle-points");
+        circlePointsElement.innerText = circlePoints;
+        const crossPoints = Number(localStorage.getItem("crossPoints") || 0);
+        const crossPointsElement = document.querySelector("#cross-points");
+        crossPointsElement.innerText = crossPoints;
+
+        if (circlePoints >= 3) {
+          displayWinner("O");
+        } else if (crossPoints >= 3) {
+          displayWinner("X");
+        }
+      }
+
+      function addPointTo(marker) {
+        const id = marker === "X" ? "crossPoints" : "circlePoints";
+        const actualPoints = Number(localStorage.getItem(id) || 0);
+        localStorage.setItem(id, actualPoints + 1);
+        location.reload();
+      }
+
       const cells = document.querySelectorAll(".board .row p");
       cells.forEach((cell) => cell.addEventListener("click", handleCellClick));
+      initResults();
     </script>
   </body>
 </html>
